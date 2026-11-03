@@ -1,4 +1,5 @@
 import streamlit as st
+import sqlite3
 from google import genai
 from gtts import gTTS
 import io
@@ -10,21 +11,16 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilos CSS personalizados (Estética EXACTA intacta: Azul rey, textos blancos, verde limón)
+# Estética visual intacta (Azul rey, textos blancos, verde limón)
 st.markdown("""
     <style>
-    /* Fondo general de la aplicación (Azul Rey) */
     .stApp {
         background-color: #0B192C;
         color: #FFFFFF;
     }
-    
-    /* Textos principales */
     h2, h3, h4, h5, h6, p, span, label {
         color: #FFFFFF !important;
     }
-    
-    /* Botones principales con acento en Verde Limón */
     .stButton>button {
         background-color: #00FF66;
         color: #0B192C;
@@ -37,16 +33,12 @@ st.markdown("""
         background-color: #00CC52;
         color: #FFFFFF;
     }
-    
-    /* Cajas de texto y entradas */
     .stTextInput>div>div>input {
         background-color: #1E3E62;
         color: #FFFFFF;
         border-radius: 6px;
         border: 1px solid #00B4D8;
     }
-    
-    /* Tarjeta o módulo interactivo de métricas */
     .metric-card {
         background-color: #1E3E62;
         padding: 15px;
@@ -56,25 +48,40 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Configuración del cliente Gemini utilizando los Secrets de Streamlit
+# Configuración de la base de datos persistente (SQLite)
+def init_db():
+    conn = sqlite3.connect('futanalytix_usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            cedula TEXT PRIMARY KEY,
+            correo TEXT,
+            password TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Configuración del cliente Gemini
 try:
     gemini_api_key = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=gemini_api_key)
 except Exception as e:
     client = None
 
-# Base de datos simulada en memoria para usuarios registrados
-if "usuarios_db" not in st.session_state:
-    st.session_state.usuarios_db = {}
-
-# Inicializar estados de sesión
+# Estados de sesión
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 if "mostrar_registro" not in st.session_state:
     st.session_state.mostrar_registro = False
 
-# Título principal y subtítulo (INTACTOS)
+if "usuario_actual" not in st.session_state:
+    st.session_state.usuario_actual = ""
+
+# Título y subtítulo (INTACTOS)
 st.markdown("""
     <h1 style='font-family: sans-serif; font-weight: 800; font-size: 2.8rem; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 0px;'>
         Fut<span style='color: #00B4D8;'>Analytix</span>
@@ -84,15 +91,15 @@ st.markdown("""
 st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 30px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
 
 # ==========================================
-# VISTA 1: ACCESO Y REGISTRO DESPLEGABLE
+# VISTA 1: LOGIN O REGISTRO
 # ==========================================
 if not st.session_state.autenticado:
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     
     with col_l2:
-        # Formulario de Inicio de Sesión Estándar
+        # Pantalla de Inicio de Sesión (Usuario = Cédula, Contraseña = Contraseña)
         if not st.session_state.mostrar_registro:
-            usuario_login = st.text_input("Usuario (o Correo)")
+            cedula_login = st.text_input("Número de Cédula (Usuario)")
             contrasena_login = st.text_input("Contraseña", type="password")
             
             st.markdown("<br>", unsafe_allow_html=True)
@@ -104,23 +111,31 @@ if not st.session_state.autenticado:
                     st.rerun()
             with col_b2:
                 if st.button("Iniciar Sesión", use_container_width=True):
-                    if not usuario_login or not contrasena_login:
-                        st.warning("Por favor ingresa usuario y contraseña.")
-                    elif usuario_login in st.session_state.usuarios_db and st.session_state.usuarios_db[usuario_login]["password"] == contrasena_login:
-                        st.session_state.autenticado = True
-                        st.rerun()
+                    if not cedula_login or not contrasena_login:
+                        st.warning("Por favor ingresa tu cédula y contraseña.")
                     else:
-                        # Permite ingreso de prueba si no está en la BD previa
-                        st.session_state.autenticado = True
-                        st.rerun()
+                        # Verificar en la base de datos
+                        conn = sqlite3.connect('futanalytix_usuarios.db')
+                        cursor = conn.cursor()
+                        cursor.execute('SELECT * FROM usuarios WHERE cedula = ? AND password = ?', (cedula_login, contrasena_login))
+                        user = cursor.fetchone()
+                        conn.close()
                         
+                        if user:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = cedula_login
+                            st.success("¡Inicio de sesión exitoso!")
+                            st.rerun()
+                        else:
+                            st.error("Cédula o contraseña incorrectas, o el usuario no existe.")
+                            
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Olvidé mi contraseña", use_container_width=True):
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
-        # FORMULARIO DESPLEGADO AL OPRIMIR "REGISTRARSE"
+        # Pantalla de Registro Completo (5 pasos pedidos)
         else:
-            st.markdown("### 📝 Formulario de Registro Completo")
+            st.markdown("### 📝 Registro de Usuario Nuevo")
             
             correo = st.text_input("Ingresar correo electrónico")
             cedula = st.text_input("Número de cédula")
@@ -131,36 +146,43 @@ if not st.session_state.autenticado:
             
             col_reg1, col_reg2 = st.columns(2)
             with col_reg1:
-                if st.button("Completar Registro", use_container_width=True):
+                if st.button("Registrarse", use_container_width=True):
                     if not correo or not cedula or not nueva_contrasena or not confirmar_contrasena:
-                        st.warning("Por favor completa todos los campos para el registro.")
+                        st.warning("Por favor completa todos los campos.")
                     elif nueva_contrasena != confirmar_contrasena:
-                        st.error("Las contraseñas no coinciden. Inténtalo de nuevo.")
+                        st.error("Las contraseñas no coinciden.")
                     else:
-                        # Guardar registro
-                        st.session_state.usuarios_db[correo] = {
-                            "cedula": cedula,
-                            "password": nueva_contrasena
-                        }
-                        st.session_state.autenticado = True
-                        st.session_state.mostrar_registro = False
-                        st.success("¡Registro completado con éxito! Bienvenido.")
-                        st.rerun()
-                        
+                        try:
+                            conn = sqlite3.connect('futanalytix_usuarios.db')
+                            cursor = conn.cursor()
+                            cursor.execute('INSERT INTO usuarios (cedula, correo, password) VALUES (?, ?, ?)', (cedula, correo, nueva_contrasena))
+                            conn.commit()
+                            conn.close()
+                            
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = cedula
+                            st.session_state.mostrar_registro = False
+                            st.success("¡Registro exitoso y guardado permanentemente!")
+                            st.rerun()
+                        except sqlite3.IntegrityError:
+                            st.error("Esta cédula ya se encuentra registrada. Por favor inicia sesión.")
+                            
             with col_reg2:
-                if st.button("Volver atrás", use_container_width=True):
+                if st.button("Volver al Inicio", use_container_width=True):
                     st.session_state.mostrar_registro = False
                     st.rerun()
 
 # ==========================================
-# VISTA 2: DENTRO DE LA PLATAFORMA (AUTENTICADO)
+# VISTA 2: PLATAFORMA INTERNA (YA AUTENTICADO)
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
+    with col_top1:
+        st.markdown(f"<p style='color: #00B4D8;'>Sesión activa - Cédula: <b>{st.session_state.usuario_actual}</b></p>", unsafe_allow_html=True)
     with col_top2:
         if st.button("Cerrar Sesión"):
             st.session_state.autenticado = False
-            st.session_state.mostrar_registro = False
+            st.session_state.usuario_actual = ""
             st.rerun()
 
     col1, col2 = st.columns([2, 1])
@@ -198,7 +220,7 @@ else:
         st.subheader("📊 Métricas Rápidas")
         st.markdown("<div class='metric-card'><b>Estado del Sistema:</b> <span style='color: #00FF66;'>Activo 🟢</span></div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='metric-card'><b>Monitoreo de Clubes:</b><br>• Stuttgart<br>• Manchester City<br>• Milan<br>• Juventus</div>", unsafe_allow_html=True)
+        st.markdown("<div class='metric-card<b>Monitoreo de Clubes:</b><br>• Stuttgart<br>• Manchester City<br>• Milan<br>• Juventus</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

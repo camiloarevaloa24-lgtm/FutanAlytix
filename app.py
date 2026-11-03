@@ -80,7 +80,7 @@ def init_db():
 
 init_db()
 
-# Estados de sesión (INTACTOS + Lista para numerar apuestas)
+# Estados de sesión (INTACTOS)
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -181,7 +181,7 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN (CON NUMERACIÓN DE APUESTAS)
+# VISTA 2: DENTRO DE LA APLICACIÓN
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
@@ -196,7 +196,7 @@ else:
 
     st.subheader("Sube la imagen de tu apuesta aqui")
     
-    # Mostrar las apuestas que ya han sido subidas, numeradas ordenadamente
+    # Mostrar las apuestas subidas de forma numerada
     if st.session_state.lista_apuestas:
         for idx, apuesta_img in enumerate(st.session_state.lista_apuestas, 1):
             st.success(f"Apuesta {idx} cargada correctamente.")
@@ -204,7 +204,6 @@ else:
 
     # Validar el límite de máximo 10 apuestas
     if len(st.session_state.lista_apuestas) < 10:
-        # Recuadro para subir nueva imagen con clave dinámica basada en la cantidad actual
         imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key=f"uploader_{len(st.session_state.lista_apuestas)}")
         
         if imagen_apuesta is not None:
@@ -218,11 +217,17 @@ else:
     
     st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
     
-    if st.button("+Apuestas"):
-        if len(st.session_state.lista_apuestas) < 10:
-            st.info("Listo para adjuntar la siguiente apuesta.")
-        else:
-            st.warning("Ya tienes el límite máximo de 10 apuestas activas.")
+    # Botones de acción inferiores
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("+Apuestas"):
+            if len(st.session_state.lista_apuestas) < 10:
+                st.info("Listo para adjuntar la siguiente apuesta.")
+            else:
+                st.warning("Ya tienes el límite máximo de 10 apuestas activas.")
+    with col_btn2:
+        if st.button("Consultar ultimos enfrentamientos del equipo"):
+            st.info("Función para consultar últimos enfrentamientos activada.")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8; font-size: 0.9rem;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

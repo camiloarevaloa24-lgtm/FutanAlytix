@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual mejorada (Toque profesional, limpio y elegante con fondo azul rey y verde limón)
+# Estética visual intacta (Azul rey, textos blancos, verde limón)
 st.markdown("""
     <style>
     .stApp {
@@ -39,14 +39,6 @@ st.markdown("""
         border-radius: 6px;
         border: 1px solid #00B4D8;
     }
-    /* Tarjeta o contenedor elegante para un diseño glamuroso y profesional */
-    .professional-container {
-        background-color: #1E3E62;
-        padding: 25px;
-        border-radius: 12px;
-        border: 1px solid rgba(0, 180, 216, 0.4);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -76,14 +68,14 @@ if "mostrar_registro" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
-# Título principal y subtítulo (EXACTAMENTE IGUALES)
+# Título principal y el nuevo subtítulo solicitado
 st.markdown("""
     <h1 style='font-family: sans-serif; font-weight: 800; font-size: 2.8rem; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 0px;'>
         Fut<span style='color: #00B4D8;'>Analytix</span>
     </h1>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 30px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 30px;'>Asistente AI en vivo para tus apustas</p>", unsafe_allow_html=True)
 
 # ==========================================
 # VISTA 1: ACCESO (INGRESAR / REGISTRARSE)
@@ -164,12 +156,11 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN (DISEÑO PROFESIONAL Y ELEGANTE)
+# VISTA 2: DENTRO DE LA APLICACIÓN (SIN RECUADRO AZUL)
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
     with col_top1:
-        # Indicador limpio de Sesión Activa sin cédula y sin emojis
         st.markdown("<p style='color: #00B4D8; font-weight: 600; letter-spacing: 0.5px;'>Sesión Activa</p>", unsafe_allow_html=True)
     with col_top2:
         if st.button("Cerrar Sesión"):
@@ -177,12 +168,9 @@ else:
             st.session_state.usuario_actual = ""
             st.rerun()
 
-    # Contenedor principal con estilo elegante y profesional
-    st.markdown("<div class='professional-container'>", unsafe_allow_html=True)
-    
+    # Elementos principales limpios sin contenedor extra
     st.subheader("Sube la imagen de tu apuesta aqui")
     
-    # Recuadro para subir la imagen limpio
     imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="subir_apuesta")
     
     if imagen_apuesta is not None:
@@ -191,14 +179,10 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Aviso profesional sin emojis
     st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
     
-    # Botón +Apuestas
     if st.button("+Apuestas"):
         st.info("Opción de apuestas adicionales habilitada.")
-        
-    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8; font-size: 0.9rem;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

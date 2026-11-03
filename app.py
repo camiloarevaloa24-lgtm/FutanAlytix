@@ -1,5 +1,6 @@
 import streamlit as st
 import sqlite3
+from google import genai
 
 # Configuración inicial de la página (INTACTA)
 st.set_page_config(
@@ -8,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual intacta + Estilo exclusivo en Azul Claro para el botón de Enfrentamientos
+# Estética visual intacta
 st.markdown("""
     <style>
     .stApp {
@@ -78,6 +79,13 @@ st.markdown("""
         background-color: #00CC52 !important;
         color: #FFFFFF !important;
     }
+    .metric-card {
+        background-color: #1E3E62;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #00B4D8;
+        margin-top: 15px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -97,7 +105,14 @@ def init_db():
 
 init_db()
 
-# Estados de sesión (INTACTOS)
+# Configuración del cliente Gemini para el análisis deportivo
+try:
+    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+    client = genai.Client(api_key=gemini_api_key)
+except Exception:
+    client = None
+
+# Estados de sesión (INTACTOS + Estado de navegación para los enfrentamientos)
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -109,6 +124,9 @@ if "usuario_actual" not in st.session_state:
 
 if "lista_apuestas" not in st.session_state:
     st.session_state.lista_apuestas = []
+
+if "ver_enfrentamientos" not in st.session_state:
+    st.session_state.ver_enfrentamientos = False
 
 # Título principal y subtítulo (INTACTOS)
 st.markdown("""
@@ -204,10 +222,12 @@ else:
     col_top1, col_top2 = st.columns([6, 1])
     with col_top1:
         st.markdown("<p style='color: #00B4D8; font-weight: 600; letter-spacing: 0.5px;'>Sesión Activa</p>", unsafe_allow_html=True)
+        
         # Botón estilizado en Azul Claro debajo de "Sesión Activa"
         st.markdown("<div element-id='btn_enfrentamientos'>", unsafe_allow_html=True)
         if st.button("Consultar ultimos enfrentamientos del equipo"):
-            st.info("Función para consultar últimos enfrentamientos activada.")
+            st.session_state.ver_enfrentamientos = not st.session_state.ver_enfrentamientos
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_top2:
@@ -215,37 +235,88 @@ else:
             st.session_state.autenticado = False
             st.session_state.usuario_actual = ""
             st.session_state.lista_apuestas = []
+            st.session_state.ver_enfrentamientos = False
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Sube la imagen de tu apuesta aqui")
-    
-    # Mostrar las apuestas subidas de forma numerada
-    if st.session_state.lista_apuestas:
-        for idx, apuesta_img in enumerate(st.session_state.lista_apuestas, 1):
-            st.success(f"Apuesta {idx} cargada correctamente.")
-            st.image(apuesta_img, caption=f"Apuesta {idx}", width=400)
-
-    # Validar el límite de máximo 10 apuestas
-    if len(st.session_state.lista_apuestas) < 10:
-        imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key=f"uploader_{len(st.session_state.lista_apuestas)}")
+    # ==========================================
+    # SECCIÓN: MÓDULO DE ÚLTIMOS ENFRENTAMIENTOS Y ANÁLISIS
+    # ==========================================
+    if st.session_state.ver_enfrentamientos:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("Consultar Últimos Enfrentamientos y Análisis de Equipo")
+        st.markdown("<p style='color: #00B4D8;'>Ingresa el nombre del equipo de fútbol para generar el informe completo con los últimos 6 partidos oficiales, plantilla, estadísticas y análisis inteligente.</p>", unsafe_allow_html=True)
         
-        if imagen_apuesta is not None:
-            if imagen_apuesta not in st.session_state.lista_apuestas:
-                st.session_state.lista_apuestas.append(imagen_apuesta)
+        equipo_input = st.text_input("Nombre del equipo", placeholder="Ej: Real Madrid, Millonarios, Manchester City...")
+        
+        col_bus1, col_bus2 = st.columns([1, 4])
+        with col_bus1:
+            btn_buscar = st.button("Buscar Equipo")
+        with col_bus2:
+            if st.button("Regresar al Gestor de Apuestas"):
+                st.session_state.ver_enfrentamientos = False
                 st.rerun()
-    else:
-        st.warning("Has alcanzado el límite máximo permitido.")
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
-    
-    if st.button("+Apuestas"):
+        if btn_buscar:
+            if not client:
+                st.error("⚠️ Configura la `GEMINI_API_KEY` en los Secrets de tu aplicación de Streamlit.")
+            elif not equipo_input.strip():
+                st.warning("Por favor ingresa un nombre de equipo válido.")
+            else:
+                with st.spinner(f"Recopilando datos oficiales y generando informe para {equipo_input}..."):
+                    prompt_analisis = f"""
+                    Actúa como un analista y scouter de fútbol profesional. Analiza al equipo '{equipo_input}' basándote en los datos reales y verificables actuales (2026).
+                    Estructura tu respuesta rigurosamente en estas 6 secciones con formato claro:
+
+                    1. **Información de los últimos 6 partidos oficiales** (Fechas exactas, rivales, marcadores, resultado victoria/empate/derrota, condición local/visitante, competición exacta, goles a favor/contra y tarjetas rojas de ambos equipos, ordenados del más reciente al más antiguo).
+                    2. **Novedades importantes de la plantilla** (Jugadores lesionados, suspendidos, no convocados, regresos importantes, cambios en la alineación titular, posición habitual y motivo confirmado de ausencia, sin inventar diagnósticos).
+                    3. **Estadísticas de rendimiento** (Victorias, empates, derrotas, goles marcados, recibidos, promedios, porterías a cero, partidos sin marcar, remates totales, a puerta, córners, posesión y tarjetas rojas).
+                    4. **Rendimiento como local y visitante** (Separación de partidos, victorias, empates, derrotas, goles a favor y en contra en ambas condiciones).
+                    5. **Posición actual en las competiciones** (Clasificación, puntos, partidos jugados, ganados, empatados, perdidos, goles a favor/contra, diferencia y situación actual en cada torneo que dispute).
+                    6. **Análisis inteligente de los seis encuentros** (Informe interpretativo que responda cómo llega al próximo partido, evolución de rendimiento, problemas defensivos, generación de ocasiones, dependencia de jugadores, bajas clave, diferencias local/visitante y patrones recurrentes respaldados por los datos).
+                    """
+                    try:
+                        respuesta_ia = client.models.generate_content(
+                            model="gemini-2.5-flash",
+                            contents=prompt_analisis
+                        )
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"Ocurrió un error al procesar la consulta con la inteligencia artificial: {e}")
+
+    # ==========================================
+    # VISTA PRINCIPAL: GESTOR DE APUESTAS Y CARGA (INTACTA)
+    # ==========================================
+    else:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("Sube la imagen de tu apuesta aqui")
+        
+        # Mostrar las apuestas subidas de forma numerada
+        if st.session_state.lista_apuestas:
+            for idx, apuesta_img in enumerate(st.session_state.lista_apuestas, 1):
+                st.success(f"Apuesta {idx} cargada correctamente.")
+                st.image(apuesta_img, caption=f"Apuesta {idx}", width=400)
+
+        # Validar el límite de máximo 10 apuestas
         if len(st.session_state.lista_apuestas) < 10:
-            st.info("Listo para adjuntar la siguiente apuesta.")
+            imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key=f"uploader_{len(st.session_state.lista_apuestas)}")
+            
+            if imagen_apuesta is not None:
+                if imagen_apuesta not in st.session_state.lista_apuestas:
+                    st.session_state.lista_apuestas.append(imagen_apuesta)
+                    st.rerun()
         else:
-            st.warning("Ya tienes el límite máximo de 10 apuestas activas.")
+            st.warning("Has alcanzado el límite máximo permitido.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
+        
+        if st.button("+Apuestas"):
+            if len(st.session_state.lista_apuestas) < 10:
+                st.info("Listo para adjuntar la siguiente apuesta.")
+            else:
+                st.warning("Ya tienes el límite máximo de 10 apuestas activas.")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8; font-size: 0.9rem;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual intacta (Azul rey, textos blancos, verde limón)
+# Estética visual: Botón de subida más legible, recuadro más cuadrado y diseño intacto
 st.markdown("""
     <style>
     .stApp {
@@ -39,6 +39,29 @@ st.markdown("""
         border-radius: 6px;
         border: 1px solid #00B4D8;
     }
+    
+    /* Personalización para hacer el recuadro de subida más cuadrado y el botón más legible */
+    [data-testid="stFileUploader"] {
+        background-color: #1E3E62;
+        border: 2px dashed #00B4D8;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    [data-testid="stFileUploader"] section {
+        padding: 10px;
+    }
+    /* Estilo para que el botón "Browse files" / "Examinar" resalte con alta legibilidad */
+    [data-testid="stFileUploader"] button {
+        background-color: #00FF66 !important;
+        color: #0B192C !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
+        border: none !important;
+    }
+    [data-testid="stFileUploader"] button:hover {
+        background-color: #00CC52 !important;
+        color: #FFFFFF !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -68,7 +91,7 @@ if "mostrar_registro" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
-# Título principal y el nuevo subtítulo solicitado
+# Título principal y subtítulo (INTACTOS)
 st.markdown("""
     <h1 style='font-family: sans-serif; font-weight: 800; font-size: 2.8rem; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 0px;'>
         Fut<span style='color: #00B4D8;'>Analytix</span>
@@ -156,7 +179,7 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN (SIN RECUADRO AZUL)
+# VISTA 2: DENTRO DE LA APLICACIÓN
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
@@ -168,9 +191,9 @@ else:
             st.session_state.usuario_actual = ""
             st.rerun()
 
-    # Elementos principales limpios sin contenedor extra
     st.subheader("Sube la imagen de tu apuesta aqui")
     
+    # Recuadro optimizado y más cuadrado
     imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="subir_apuesta")
     
     if imagen_apuesta is not None:

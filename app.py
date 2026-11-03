@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual: Botón de subida más legible, recuadro más cuadrado y diseño intacto
+# Estética visual intacta (Azul rey, textos blancos, verde limón)
 st.markdown("""
     <style>
     .stApp {
@@ -40,7 +40,7 @@ st.markdown("""
         border: 1px solid #00B4D8;
     }
     
-    /* Personalización para hacer el recuadro de subida más cuadrado y el botón más legible */
+    /* Personalización para el recuadro de subida más cuadrado y legible */
     [data-testid="stFileUploader"] {
         background-color: #1E3E62;
         border: 2px dashed #00B4D8;
@@ -50,7 +50,6 @@ st.markdown("""
     [data-testid="stFileUploader"] section {
         padding: 10px;
     }
-    /* Estilo para que el botón "Browse files" / "Examinar" resalte con alta legibilidad */
     [data-testid="stFileUploader"] button {
         background-color: #00FF66 !important;
         color: #0B192C !important;
@@ -81,7 +80,7 @@ def init_db():
 
 init_db()
 
-# Estados de sesión (INTACTOS)
+# Estados de sesión (INTACTOS + Lista para numerar apuestas)
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -90,6 +89,9 @@ if "mostrar_registro" not in st.session_state:
 
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
+
+if "lista_apuestas" not in st.session_state:
+    st.session_state.lista_apuestas = []
 
 # Título principal y subtítulo (INTACTOS)
 st.markdown("""
@@ -179,7 +181,7 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN
+# VISTA 2: DENTRO DE LA APLICACIÓN (CON NUMERACIÓN DE APUESTAS)
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
@@ -189,23 +191,38 @@ else:
         if st.button("Cerrar Sesión"):
             st.session_state.autenticado = False
             st.session_state.usuario_actual = ""
+            st.session_state.lista_apuestas = []
             st.rerun()
 
     st.subheader("Sube la imagen de tu apuesta aqui")
     
-    # Recuadro optimizado y más cuadrado
-    imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="subir_apuesta")
-    
-    if imagen_apuesta is not None:
-        st.success("Imagen cargada correctamente.")
-        st.image(imagen_apuesta, caption="Apuesta cargada", width=400)
+    # Mostrar las apuestas que ya han sido subidas, numeradas ordenadamente
+    if st.session_state.lista_apuestas:
+        for idx, apuesta_img in enumerate(st.session_state.lista_apuestas, 1):
+            st.success(f"Apuesta {idx} cargada correctamente.")
+            st.image(apuesta_img, caption=f"Apuesta {idx}", width=400)
+
+    # Validar el límite de máximo 10 apuestas
+    if len(st.session_state.lista_apuestas) < 10:
+        # Recuadro para subir nueva imagen con clave dinámica basada en la cantidad actual
+        imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key=f"uploader_{len(st.session_state.lista_apuestas)}")
+        
+        if imagen_apuesta is not None:
+            if imagen_apuesta not in st.session_state.lista_apuestas:
+                st.session_state.lista_apuestas.append(imagen_apuesta)
+                st.rerun()
+    else:
+        st.warning("Has alcanzado el límite máximo permitido.")
 
     st.markdown("<br>", unsafe_allow_html=True)
     
     st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
     
     if st.button("+Apuestas"):
-        st.info("Opción de apuestas adicionales habilitada.")
+        if len(st.session_state.lista_apuestas) < 10:
+            st.info("Listo para adjuntar la siguiente apuesta.")
+        else:
+            st.warning("Ya tienes el límite máximo de 10 apuestas activas.")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8; font-size: 0.9rem;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

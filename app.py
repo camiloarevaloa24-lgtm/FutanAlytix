@@ -1,10 +1,7 @@
 import streamlit as st
 import sqlite3
-from google import genai
-from gtts import gTTS
-import io
 
-# Configuración inicial de la página
+# Configuración inicial de la página (INTACTA)
 st.set_page_config(
     page_title="FutAnalytix",
     page_icon="⚽",
@@ -39,16 +36,10 @@ st.markdown("""
         border-radius: 6px;
         border: 1px solid #00B4D8;
     }
-    .metric-card {
-        background-color: #1E3E62;
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #00B4D8;
-    }
     </style>
 """, unsafe_allow_html=True)
 
-# Configuración de la base de datos persistente (SQLite)
+# Base de datos SQLite (INTACTA)
 def init_db():
     conn = sqlite3.connect('futanalytix_usuarios.db')
     cursor = conn.cursor()
@@ -64,14 +55,7 @@ def init_db():
 
 init_db()
 
-# Configuración del cliente Gemini
-try:
-    gemini_api_key = st.secrets["GEMINI_API_KEY"]
-    client = genai.Client(api_key=gemini_api_key)
-except Exception as e:
-    client = None
-
-# Estados de sesión
+# Estados de sesión (INTACTOS)
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -81,7 +65,7 @@ if "mostrar_registro" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
-# Título principal y subtítulo (INTACTOS)
+# Título principal y subtítulo (EXACTAMENTE IGUALES)
 st.markdown("""
     <h1 style='font-family: sans-serif; font-weight: 800; font-size: 2.8rem; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 0px;'>
         Fut<span style='color: #00B4D8;'>Analytix</span>
@@ -91,13 +75,12 @@ st.markdown("""
 st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 30px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
 
 # ==========================================
-# VISTA 1: LOGIN O REGISTRO (PANTALLA DE ACCESO)
+# VISTA 1: ACCESO (INGRESAR / REGISTRARSE)
 # ==========================================
 if not st.session_state.autenticado:
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     
     with col_l2:
-        # Pantalla de Registro Completo (si hace clic en Registrarse)
         if st.session_state.mostrar_registro:
             st.markdown("### 📝 Registro de Usuario Nuevo")
             correo = st.text_input("Ingresar correo electrónico")
@@ -135,7 +118,6 @@ if not st.session_state.autenticado:
                     st.session_state.mostrar_registro = False
                     st.rerun()
 
-        # Pantalla de Inicio de Sesión Normal
         else:
             cedula_login = st.text_input("Número de Cédula (Usuario)")
             contrasena_login = st.text_input("Contraseña", type="password")
@@ -171,7 +153,7 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN (YA INICIÓ SESIÓN)
+# VISTA 2: DENTRO DE LA APLICACIÓN (UNICAMENTE LO QUE PEDISTE)
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
@@ -183,51 +165,24 @@ else:
             st.session_state.usuario_actual = ""
             st.rerun()
 
-    col1, col2 = st.columns([2, 1])
+    # Texto requerido
+    st.subheader("📸 Sube la imagen de tu apuesta aqui")
+    
+    # Recuadro para subir la imagen
+    imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="subir_apuesta")
+    
+    if imagen_apuesta is not None:
+        st.success("¡Imagen cargada correctamente!")
+        st.image(imagen_apuesta, caption="Apuesta cargada", width=400)
 
-    with col1:
-        # Aquí es donde se abre la aplicación con el botón/recuadro para subir la imagen de la apuesta
-        st.subheader("📸 Subir Imagen de Apuesta")
-        imagen_apuesta = st.file_uploader("Descarga o sube la imagen de tu apuesta aquí", type=['png', 'jpg', 'jpeg'])
-        
-        if imagen_apuesta is not None:
-            st.success("¡Imagen cargada correctamente!")
-            st.image(imagen_apuesta, caption="Apuesta cargada", use_column_width=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader("🤖 Asistente Táctico y de Apuestas (Gemini)")
-        prompt_usuario = st.text_area("Consulta sobre un partido, estadísticas de clubes o análisis de probabilidades:", 
-                                      placeholder="Ej: Analiza el riesgo y probabilidades para el próximo partido...")
-        
-        if st.button("Generar Análisis Proactivo"):
-            if not client:
-                st.error("⚠️ Falta configurar la `GEMINI_API_KEY` en los Secrets de Streamlit Cloud.")
-            elif not prompt_usuario.strip():
-                st.warning("Por favor ingresa una consulta para el análisis.")
-            else:
-                with st.spinner("Analizando variables con Inteligencia Artificial..."):
-                    try:
-                        response = client.models.generate_content(
-                            model="gemini-2.5-flash",
-                            contents=f"Eres un experto analista de datos de fútbol. Responde al siguiente análisis: {prompt_usuario}"
-                        )
-                        st.success("¡Análisis completado!")
-                        st.markdown(f"<div class='metric-card'>{response.text}</div>", unsafe_allow_html=True)
-                        
-                        tts = gTTS(text=response.text[:500], lang='es')
-                        audio_buffer = io.BytesIO()
-                        tts.write_to_fp(audio_buffer)
-                        audio_buffer.seek(0)
-                        st.audio(audio_buffer, format='audio/mp3')
-                        
-                    except Exception as err:
-                        st.error(f"Error al conectar con la API de Gemini: {err}")
-
-    with col2:
-        st.subheader("📊 Métricas Rápidas")
-        st.markdown("<div class='metric-card'><b>Estado del Sistema:</b> <span style='color: #00FF66;'>Activo 🟢</span></div>", unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='metric-card'><b>Monitoreo de Clubes:</b><br>• Stuttgart<br>• Manchester City<br>• Milan<br>• Juventus</div>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Aviso requerido
+    st.markdown("<p style='color: #00B4D8; font-weight: bold;'>⚠️ Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
+    
+    # Botón requerido
+    if st.button("+Apuestas"):
+        st.info("Opción +Apuestas activada.")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

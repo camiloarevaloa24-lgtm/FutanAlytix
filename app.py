@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual intacta (Azul rey, textos blancos, verde limón)
+# Estética visual intacta + Estilo exclusivo en Azul Claro para el botón de Enfrentamientos
 st.markdown("""
     <style>
     .stApp {
@@ -40,6 +40,23 @@ st.markdown("""
         border: 1px solid #00B4D8;
     }
     
+    /* Botón exclusivo de Enfrentamientos en Azul Claro Elegante */
+    div[element-id="btn_enfrentamientos"] > button {
+        background-color: #00B4D8 !important;
+        color: #0B192C !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.6px !important;
+        border-radius: 8px !important;
+        border: 1px solid #90E0EF !important;
+        box-shadow: 0 2px 8px rgba(0, 180, 216, 0.3) !important;
+    }
+    div[element-id="btn_enfrentamientos"] > button:hover {
+        background-color: #48CAE4 !important;
+        color: #0B192C !important;
+        box-shadow: 0 4px 12px rgba(72, 202, 228, 0.5) !important;
+    }
+
     /* Personalización para el recuadro de subida más cuadrado y legible */
     [data-testid="stFileUploader"] {
         background-color: #1E3E62;
@@ -174,7 +191,7 @@ if not st.session_state.autenticado:
                             st.success("¡Inicio de sesión exitoso!")
                             st.rerun()
                         else:
-                            st.error("Cédula or contraseña incorrectas, o el usuario no existe.")
+                            st.error("Cédula o contraseña incorrectas, o el usuario no existe.")
                             
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Olvidé mi contraseña", use_container_width=True):
@@ -187,9 +204,12 @@ else:
     col_top1, col_top2 = st.columns([6, 1])
     with col_top1:
         st.markdown("<p style='color: #00B4D8; font-weight: 600; letter-spacing: 0.5px;'>Sesión Activa</p>", unsafe_allow_html=True)
-        # Botón ubicado exactamente debajo de "Sesión Activa"
+        # Botón estilizado en Azul Claro debajo de "Sesión Activa"
+        st.markdown("<div element-id='btn_enfrentamientos'>", unsafe_allow_html=True)
         if st.button("Consultar ultimos enfrentamientos del equipo"):
             st.info("Función para consultar últimos enfrentamientos activada.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with col_top2:
         if st.button("Cerrar Sesión"):
             st.session_state.autenticado = False

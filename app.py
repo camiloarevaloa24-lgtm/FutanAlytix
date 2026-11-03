@@ -43,15 +43,6 @@ st.markdown("""
         border-radius: 6px;
         border: 1px solid #00B4D8;
     }
-    
-    /* Tarjeta contenedora de acceso */
-    .login-container {
-        background-color: #1E3E62;
-        padding: 30px;
-        border-radius: 12px;
-        border: 1px solid #00B4D8;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -65,12 +56,7 @@ st.markdown("""
 # Subtítulo solicitado (Intacto)
 st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 30px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
 
-# Contenedor central de acceso y registro
-st.markdown("<div class='login-container'>", unsafe_allow_html=True)
-
-st.subheader("🔐 Registro de Usuario")
-
-# 2. Usuario y 3. Contraseña
+# Campos de acceso directos sin recuadro ni títulos adicionales
 usuario = st.text_input("Usuario")
 contrasena = st.text_input("Contraseña", type="password")
 
@@ -88,8 +74,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 4. Olvidé mi contraseña
 if st.button("Olvidé mi contraseña"):
     st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #00B4D8;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

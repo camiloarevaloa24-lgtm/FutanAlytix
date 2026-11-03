@@ -19,8 +19,8 @@ st.markdown("""
         color: #FFFFFF;
     }
     
-    /* Títulos y textos principales */
-    h1, h2, h3, h4, h5, h6, p, span, label {
+    /* Textos principales */
+    h2, h3, h4, h5, h6, p, span, label {
         color: #FFFFFF !important;
     }
     
@@ -62,9 +62,15 @@ try:
 except Exception as e:
     client = None
 
-# Interfaz principal de la aplicación (Título y subtítulo solicitados)
-st.title("FutAnalytix")
-st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: -15px; margin-bottom: 25px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
+# Título principal profesional y moderno con toque de alta seguridad corporativa
+st.markdown("""
+    <h1 style='font-family: sans-serif; font-weight: 800; font-size: 2.8rem; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 0px;'>
+        Fut<span style='color: #00B4D8;'>Analytix</span>
+    </h1>
+""", unsafe_allow_html=True)
+
+# Subtítulo solicitado
+st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: 5px; margin-bottom: 25px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
 
 # Sección de consulta y análisis con Gemini
 col1, col2 = st.columns([2, 1])

@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estética visual intacta (Azul rey, textos blancos, verde limón)
+# Estética visual mejorada (Toque profesional, limpio y elegante con fondo azul rey y verde limón)
 st.markdown("""
     <style>
     .stApp {
@@ -17,14 +17,17 @@ st.markdown("""
     }
     h2, h3, h4, h5, h6, p, span, label {
         color: #FFFFFF !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .stButton>button {
         background-color: #00FF66;
         color: #0B192C;
-        font-weight: bold;
+        font-weight: 700;
         border-radius: 8px;
         border: none;
         padding: 0.6rem 1rem;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
     }
     .stButton>button:hover {
         background-color: #00CC52;
@@ -35,6 +38,14 @@ st.markdown("""
         color: #FFFFFF;
         border-radius: 6px;
         border: 1px solid #00B4D8;
+    }
+    /* Tarjeta o contenedor elegante para un diseño glamuroso y profesional */
+    .professional-container {
+        background-color: #1E3E62;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 180, 216, 0.4);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -82,7 +93,7 @@ if not st.session_state.autenticado:
     
     with col_l2:
         if st.session_state.mostrar_registro:
-            st.markdown("### 📝 Registro de Usuario Nuevo")
+            st.markdown("### Registro de Usuario Nuevo")
             correo = st.text_input("Ingresar correo electrónico")
             cedula = st.text_input("Número de cédula")
             nueva_contrasena = st.text_input("Crear contraseña", type="password")
@@ -153,36 +164,41 @@ if not st.session_state.autenticado:
                 st.info("Instrucciones de recuperación enviadas a tu sistema registrado.")
 
 # ==========================================
-# VISTA 2: DENTRO DE LA APLICACIÓN (UNICAMENTE LO QUE PEDISTE)
+# VISTA 2: DENTRO DE LA APLICACIÓN (DISEÑO PROFESIONAL Y ELEGANTE)
 # ==========================================
 else:
     col_top1, col_top2 = st.columns([6, 1])
     with col_top1:
-        st.markdown(f"<p style='color: #00B4D8;'>Sesión activa - Cédula: <b>{st.session_state.usuario_actual}</b></p>", unsafe_allow_html=True)
+        # Indicador limpio de Sesión Activa sin cédula y sin emojis
+        st.markdown("<p style='color: #00B4D8; font-weight: 600; letter-spacing: 0.5px;'>Sesión Activa</p>", unsafe_allow_html=True)
     with col_top2:
         if st.button("Cerrar Sesión"):
             st.session_state.autenticado = False
             st.session_state.usuario_actual = ""
             st.rerun()
 
-    # Texto requerido
-    st.subheader("📸 Sube la imagen de tu apuesta aqui")
+    # Contenedor principal con estilo elegante y profesional
+    st.markdown("<div class='professional-container'>", unsafe_allow_html=True)
     
-    # Recuadro para subir la imagen
+    st.subheader("Sube la imagen de tu apuesta aqui")
+    
+    # Recuadro para subir la imagen limpio
     imagen_apuesta = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="subir_apuesta")
     
     if imagen_apuesta is not None:
-        st.success("¡Imagen cargada correctamente!")
+        st.success("Imagen cargada correctamente.")
         st.image(imagen_apuesta, caption="Apuesta cargada", width=400)
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Aviso requerido
-    st.markdown("<p style='color: #00B4D8; font-weight: bold;'>⚠️ Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
+    # Aviso profesional sin emojis
+    st.markdown("<p style='color: #00B4D8; font-weight: 500;'>Aviso: Máximo 10 apuestas a la vez</p>", unsafe_allow_html=True)
     
-    # Botón requerido
+    # Botón +Apuestas
     if st.button("+Apuestas"):
-        st.info("Opción +Apuestas activada.")
+        st.info("Opción de apuestas adicionales habilitada.")
+        
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #00B4D8;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #00B4D8; font-size: 0.9rem;'>FutAnalytix © 2026 - Todos los derechos reservados</p>", unsafe_allow_html=True)

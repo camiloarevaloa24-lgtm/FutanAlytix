@@ -62,9 +62,9 @@ try:
 except Exception as e:
     client = None
 
-# Interfaz principal de la aplicación
-st.title("⚽ FutAnalytix - Panel de Análisis Deportivo")
-st.markdown("Consolidación de estadísticas en tiempo real, métricas de jugadores e inteligencia artificial aplicada al análisis táctico y de riesgos.")
+# Interfaz principal de la aplicación (Título y subtítulo solicitados)
+st.title("FutAnalytix")
+st.markdown("<p style='font-size: 1.2rem; color: #00B4D8; margin-top: -15px; margin-bottom: 25px;'>Asistente AI para analizar fútbol en vivo</p>", unsafe_allow_html=True)
 
 # Sección de consulta y análisis con Gemini
 col1, col2 = st.columns([2, 1])

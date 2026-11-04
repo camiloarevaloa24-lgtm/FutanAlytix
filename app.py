@@ -275,13 +275,35 @@ else:
                     6. **Análisis inteligente de los seis encuentros** (Informe interpretativo que responda cómo llega al próximo partido, evolución de rendimiento, problemas defensivos, generación de ocasiones, dependencia de jugadores, bajas clave, diferencias local/visitante y patrones recurrentes respaldados por los datos).
                     """
                     try:
-                        respuesta_ia = client.models.generate_content(
-                            model="models/gemini-3.8-flash",
-                            contents=prompt_analisis
-                        )
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
-                    except Exception as e:
+                        import time
+                    
+                    exito = False
+                    
+                    # 1. Intentos automáticos con el modelo estándar gratuito
+                    for intento in range(3):
+                        try:
+                            respuesta_ia = client.models.generate_content(
+                                model="gemini-2.0-flash",
+                                contents=prompt_analisis
+                            )
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
+                            exito = True
+                            break
+                        except Exception:
+                            time.sleep(2)  # Espera 2 segundos antes de reintentar
+                    
+                    # 2. Respaldo automático gratuito si el servidor principal se satura
+                    if not exito:
+                        try:
+                            respuesta_ia = client.models.generate_content(
+                                model="gemini-2.5-pro",
+                                contents=prompt_analisis
+                            )
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
+                        except Exception as e:
+                            st.error("Los servidores de Google están experimentando un pico de tráfico. Por favor presiona 'Buscar Equipo' nuevamente en un par de segundos.")
                         st.error(f"Ocurrió un error al procesar la consulta con la inteligencia artificial: {e}")
 
     # ==========================================

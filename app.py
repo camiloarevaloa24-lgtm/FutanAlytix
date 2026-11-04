@@ -274,8 +274,7 @@ else:
                     5. **Posición actual en las competiciones** (Clasificación, puntos, partidos jugados, ganados, empatados, perdidos, goles a favor/contra, diferencia y situación actual en cada torneo que dispute).
                     6. **Análisis inteligente de los seis encuentros** (Informe interpretativo que responda cómo llega al próximo partido, evolución de rendimiento, problemas defensivos, generación de ocasiones, dependencia de jugadores, bajas clave, diferencias local/visitante y patrones recurrentes respaldados por los datos).
                     """
-                    try:
-                        import time
+                    import time
                     
                     exito = False
                     
@@ -304,8 +303,6 @@ else:
                             st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
                         except Exception as e:
                             st.error("Los servidores de Google están experimentando un pico de tráfico. Por favor presiona 'Buscar Equipo' nuevamente en un par de segundos.")
-                        st.error(f"Ocurrió un error al procesar la consulta con la inteligencia artificial: {e}")
-
     # ==========================================
     # VISTA PRINCIPAL: GESTOR DE APUESTAS Y CARGA (INTACTA)
     # ==========================================

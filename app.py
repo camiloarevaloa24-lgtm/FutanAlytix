@@ -276,7 +276,7 @@ else:
                     """
                     try:
                         respuesta_ia = client.models.generate_content(
-                            model="gemini-2.5-flash",
+                            model="models/gemini-3.8-flash",
                             contents=prompt_analisis
                         )
                         st.markdown("<br>", unsafe_allow_html=True)

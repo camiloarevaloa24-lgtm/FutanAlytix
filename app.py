@@ -262,19 +262,30 @@ else:
             elif not equipo_input.strip():
                 st.warning("Por favor ingresa un nombre de equipo válido.")
             else:
-                with st.spinner(f"Recopilando datos oficiales y generando informe para {equipo_input}..."):
-                    prompt_analisis = f"""
-                    Actúa como un analista y scouter de fútbol profesional. Analiza al equipo '{equipo_input}' basándote en los datos reales y verificables actuales (2026).
-                    Estructura tu respuesta rigurosamente en estas 6 secciones con formato claro:
+              with st.spinner(f"Consultando últimos datos y estadísticas de {equipo_input}..."):
+                        prompt_analisis = f"""
+                        Actúa como un experto analista de datos de fútbol y estadísticas deportivas. 
+                        Para el equipo de fútbol '{equipo_input}', genera un informe ejecutivo estructurado exactamente con los siguientes 3 bloques utilizando formato Markdown (tablas nativas de Markdown y viñetas):
 
-                    1. **Información de los últimos 6 partidos oficiales** (Fechas exactas, rivales, marcadores, resultado victoria/empate/derrota, condición local/visitante, competición exacta, goles a favor/contra y tarjetas rojas de ambos equipos, ordenados del más reciente al más antiguo).
-                    2. **Novedades importantes de la plantilla** (Jugadores lesionados, suspendidos, no convocados, regresos importantes, cambios en la alineación titular, posición habitual y motivo confirmado de ausencia, sin inventar diagnósticos).
-                    3. **Estadísticas de rendimiento** (Victorias, empates, derrotas, goles marcados, recibidos, promedios, porterías a cero, partidos sin marcar, remates totales, a puerta, córners, posesión y tarjetas rojas).
-                    4. **Rendimiento como local y visitante** (Separación de partidos, victorias, empates, derrotas, goles a favor y en contra en ambas condiciones).
-                    5. **Posición actual en las competiciones** (Clasificación, puntos, partidos jugados, ganados, empatados, perdidos, goles a favor/contra, diferencia y situación actual en cada torneo que dispute).
-                    6. **Análisis inteligente de los seis encuentros** (Informe interpretativo que responda cómo llega al próximo partido, evolución de rendimiento, problemas defensivos, generación de ocasiones, dependencia de jugadores, bajas clave, diferencias local/visitante y patrones recurrentes respaldados por los datos).
-                    """
-                    import time
+                        1. **Últimos 6 partidos oficiales:**
+                           Genera una tabla con las columnas exactas: | Fecha | Competición | Rival | Marcador | Resultado |. (Indica claramente si ganó, empató o perdió).
+
+                        2. **Posición y rendimiento en el torneo actual:**
+                           Genera una tabla con las columnas exactas: | Competición | Posición | PJ | PG | PE | PP | GF | GC | Puntos |. (Muestra en qué parte de la tabla va o si avanzó de ronda).
+
+                        3. **Parte médico y bajas:**
+                           Un breve resumen en un solo texto indicando si el equipo durante esos seis enfrentamientos ha tenido bajas de jugadores importantes (por lesión, expulsión o decisión técnica), y especificando si para el próximo partido llega con bajas o con jugadores importantes recuperados.
+
+                        Sé directo, profesional y estructurado. No inventes datos irreales, utiliza la información más reciente de la temporada actual.
+                        """
+                        
+                        respuesta_ia = client.models.generate_content(
+                            model="gemini-2.0-flash",
+                            contents=prompt_analisis
+                        )
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
                     
                     exito = False
                     

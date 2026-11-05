@@ -286,9 +286,7 @@ else:
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown(f"<div class='metric-card'>{respuesta_ia.text}</div>", unsafe_allow_html=True)
-                    
-                    exito = False
-                    
+                                       
                     # 1. Intentos automáticos con el modelo estándar gratuito
                     for intento in range(3):
                         try:
